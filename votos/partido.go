@@ -4,9 +4,9 @@ package votos
 type Partido interface {
 
 	//VotadoPara indica que este Partido ha recibido un voto para el TipoVoto indicado. Felicitaciones!
-	VotadoPara(tipo TipoVoto)
+	VotadoPara(tipo int)
 
 	//ObtenerResultado permite obtener el resultado de este Partido para el TipoVoto indicado. El formato será el
 	//conveniente para ser mostrado.
-	ObtenerResultado(tipo TipoVoto) string
+	ObtenerResultado(tipo int) string
 }
