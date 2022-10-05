@@ -32,7 +32,7 @@ func (votante *votanteImplementacion) Votar(tipo int, alternativa int) error {
 	if votante.estado == FINALIZADO {
 		votanteFraudulento := new(errores.ErrorVotanteFraudulento)
 		votanteFraudulento.Dni = votante.dni
-		//return votanteFraudulento.Error()
+		return votanteFraudulento
 	}
 	voto := [2]int{tipo, alternativa}
 	votante.votos.Apilar(voto)
@@ -41,7 +41,8 @@ func (votante *votanteImplementacion) Votar(tipo int, alternativa int) error {
 
 func (votante *votanteImplementacion) Deshacer() error {
 	if votante.votos.EstaVacia() {
-		//return errores.ErrorNoHayVotosAnteriores{}.Error()
+		errorNoHayVotosAnteriores := new(errores.ErrorNoHayVotosAnteriores)
+		return errorNoHayVotosAnteriores
 	}
 	votante.votos.Desapilar()
 	return nil
