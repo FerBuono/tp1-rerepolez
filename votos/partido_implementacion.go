@@ -19,9 +19,8 @@ type partidoEnBlanco struct {
 	votosIntend int
 }
 
-func CrearPartido(nroLista int, nombre string, candidatos [3]string) Partido {
+func CrearPartido(nombre string, candidatos [3]string) Partido {
 	partido := new(partidoImplementacion)
-	partido.nroLista = nroLista
 	partido.nombre = nombre
 	partido.presidente = candidatos[PRESIDENTE]
 	partido.votosPresid = 0
@@ -38,10 +37,6 @@ func CrearVotosEnBlanco() Partido {
 	blanco.votosGober = 0
 	blanco.votosIntend = 0
 	return blanco
-}
-
-func (partido *partidoImplementacion) LeerNroLista() int {
-	return partido.nroLista
 }
 
 func (partido *partidoImplementacion) VotadoPara(tipo int) {
@@ -65,10 +60,6 @@ func (partido partidoImplementacion) ObtenerResultado(tipo int) string {
 	return ""
 }
 
-func (partido *partidoEnBlanco) LeerNroLista() int {
-	return 0
-}
-
 func (blanco *partidoEnBlanco) VotadoPara(tipo int) {
 	if tipo == PRESIDENTE {
 		blanco.votosPresid += 1
@@ -77,19 +68,15 @@ func (blanco *partidoEnBlanco) VotadoPara(tipo int) {
 	} else if tipo == INTENDENTE {
 		blanco.votosIntend += 1
 	}
-	println("p", blanco.votosPresid)
-	println("g", blanco.votosGober)
-	println("i", blanco.votosIntend)
-
 }
 
 func (blanco partidoEnBlanco) ObtenerResultado(tipo int) string {
 	if tipo == PRESIDENTE {
-		return fmt.Sprintf("Votos en blanco: %d votos", blanco.votosPresid)
+		return fmt.Sprintf("Votos en Blanco: %d votos", blanco.votosPresid)
 	} else if tipo == GOBERNADOR {
-		return fmt.Sprintf("Votos en blanco: %d votos", blanco.votosGober)
+		return fmt.Sprintf("Votos en Blanco: %d votos", blanco.votosGober)
 	} else if tipo == INTENDENTE {
-		return fmt.Sprintf("Votos en blanco: %d votos", blanco.votosIntend)
+		return fmt.Sprintf("Votos en Blanco: %d votos", blanco.votosIntend)
 	}
 	return ""
 }
