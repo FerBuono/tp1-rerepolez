@@ -31,6 +31,37 @@ func Cantidad[T any](lista TDALista.Lista[T]) int {
 	return sum
 }
 
+func guardarPartidos(partidos *os.File) TDALista.Lista[votos.Partido] {
+	scannerPartidos := bufio.NewScanner(partidos)
+
+	listaPartidos := TDALista.CrearListaEnlazada[votos.Partido]()
+
+	nroLista := 1
+
+	for scannerPartidos.Scan() {
+		lista := strings.Split(scannerPartidos.Text(), ",")
+		candidatos := [3]string{lista[1], lista[2], lista[3]}
+		partido := votos.CrearPartido(nroLista, lista[0], candidatos)
+		listaPartidos.InsertarUltimo(partido)
+		nroLista++
+	}
+	return listaPartidos
+}
+
+func guardarPadron(padron *os.File) TDALista.Lista[votos.Votante] {
+	listaVotantes := TDALista.CrearListaEnlazada[votos.Votante]()
+
+	scannerPadron := bufio.NewScanner(padron)
+
+	for scannerPadron.Scan() {
+		dniVotante := scannerPadron.Text()
+		dniVotanteNum, _ := strconv.Atoi(dniVotante)
+		votante := votos.CrearVotante(dniVotanteNum)
+		listaVotantes.InsertarUltimo(votante)
+	}
+	return listaVotantes
+}
+
 func main() {
 	var args = os.Args[1:]
 	if len(args) < 2 {
@@ -40,28 +71,10 @@ func main() {
 	}
 
 	partidos := AbrirArchivo(args[0])
+	listaPartidos := guardarPartidos(partidos)
+
 	padron := AbrirArchivo(args[1])
-
-	listaPartidos := TDALista.CrearListaEnlazada[votos.Partido]()
-	listaVotantes := TDALista.CrearListaEnlazada[votos.Votante]()
-
-	scannerPartidos := bufio.NewScanner(partidos)
-	scannerPadron := bufio.NewScanner(padron)
-
-	nroLista := 1
-	for scannerPartidos.Scan() {
-		lista := strings.Split(scannerPartidos.Text(), ",")
-		candidatos := [3]string{lista[1], lista[2], lista[3]}
-		partido := votos.CrearPartido(nroLista, lista[0], candidatos)
-		listaPartidos.InsertarUltimo(partido)
-		nroLista++
-	}
-	for scannerPadron.Scan() {
-		dniVotante := scannerPadron.Text()
-		dniVotanteNum, _ := strconv.Atoi(dniVotante)
-		votante := votos.CrearVotante(dniVotanteNum)
-		listaVotantes.InsertarUltimo(votante)
-	}
+	listaVotantes := guardarPadron(padron)
 
 	colaVotantes := TDACola.CrearColaEnlazada[votos.Votante]()
 
@@ -90,11 +103,13 @@ func main() {
 					fmt.Fprintln(os.Stdout, newError.Error())
 				}
 			}
+			println("OK")
 
 		case "votar":
 			if colaVotantes.EstaVacia() {
 				newError := new(errores.FilaVacia)
 				fmt.Fprintln(os.Stdout, newError.Error())
+				break
 			} else if len(input) < 3 {
 				newError := new(errores.ErrorTipoVoto)
 				fmt.Fprintln(os.Stdout, newError.Error())
@@ -124,6 +139,22 @@ func main() {
 			}
 			if puesto == "Intendente" {
 				colaVotantes.VerPrimero().Votar(2, lista)
+			}
+			println("OK")
+
+		case "deshacer":
+			if colaVotantes.EstaVacia() {
+				newError := new(errores.FilaVacia)
+				fmt.Fprintln(os.Stdout, newError.Error())
+				break
+			}
+			colaVotantes.VerPrimero().Deshacer()
+			println("OK")
+		case "fin-votar":
+			if colaVotantes.EstaVacia() {
+				newError := new(errores.FilaVacia)
+				fmt.Fprintln(os.Stdout, newError.Error())
+				break
 			}
 		}
 	}

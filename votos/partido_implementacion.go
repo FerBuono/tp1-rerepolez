@@ -51,11 +51,11 @@ func (partido *partidoImplementacion) VotadoPara(tipo int) {
 
 func (partido partidoImplementacion) ObtenerResultado(tipo int) string {
 	if tipo == PRESIDENTE {
-		return fmt.Sprintf("%s - %s: votos", partido.nombre, partido.presidente, partido.votosPresid)
+		return fmt.Sprintf("%s - %s: %d votos", partido.nombre, partido.presidente, partido.votosPresid)
 	} else if tipo == GOBERNADOR {
-		return fmt.Sprintf("%s - %s: votos", partido.nombre, partido.gobernador, partido.votosGober)
+		return fmt.Sprintf("%s - %s: %d votos", partido.nombre, partido.gobernador, partido.votosGober)
 	} else if tipo == INTENDENTE {
-		return fmt.Sprintf("%s - %s: votos", partido.nombre, partido.intendente, partido.votosIntend)
+		return fmt.Sprintf("%s - %s: %d votos", partido.nombre, partido.intendente, partido.votosIntend)
 	}
 	return ""
 }
@@ -72,11 +72,11 @@ func (blanco *partidoEnBlanco) VotadoPara(tipo int) {
 
 func (blanco partidoEnBlanco) ObtenerResultado(tipo int) string {
 	if tipo == PRESIDENTE {
-		return fmt.Sprintf("Votos en blanco: %i votos", blanco.votosPresid)
+		return fmt.Sprintf("Votos en blanco: %d votos", blanco.votosPresid)
 	} else if tipo == GOBERNADOR {
-		return fmt.Sprintf("Votos en blanco: %i votos", blanco.votosGober)
+		return fmt.Sprintf("Votos en blanco: %d votos", blanco.votosGober)
 	} else if tipo == INTENDENTE {
-		return fmt.Sprintf("Votos en blanco: %i votos", blanco.votosIntend)
+		return fmt.Sprintf("Votos en blanco: %d votos", blanco.votosIntend)
 	}
 	return ""
 }

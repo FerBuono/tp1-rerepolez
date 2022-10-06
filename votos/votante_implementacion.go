@@ -44,6 +44,11 @@ func (votante *votanteImplementacion) Deshacer() error {
 		errorNoHayVotosAnteriores := new(errores.ErrorNoHayVotosAnteriores)
 		return errorNoHayVotosAnteriores
 	}
+	if votante.estado == FINALIZADO {
+		votanteFraudulento := new(errores.ErrorVotanteFraudulento)
+		votanteFraudulento.Dni = votante.dni
+		return votanteFraudulento
+	}
 	votante.votos.Desapilar()
 	return nil
 }
