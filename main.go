@@ -32,9 +32,9 @@ func Cantidad[T any](lista TDALista.Lista[T]) int {
 }
 
 func guardarPartidos(partidos *os.File) TDALista.Lista[votos.Partido] {
-	scannerPartidos := bufio.NewScanner(partidos)
-
 	listaPartidos := TDALista.CrearListaEnlazada[votos.Partido]()
+
+	scannerPartidos := bufio.NewScanner(partidos)
 
 	nroLista := 1
 
@@ -63,31 +63,35 @@ func guardarPadron(padron *os.File) TDALista.Lista[votos.Votante] {
 }
 
 func main() {
+	var newError error
+
 	var args = os.Args[1:]
 	if len(args) < 2 {
-		newError := new(errores.ErrorParametros)
+		newError = new(errores.ErrorParametros)
 		fmt.Fprintln(os.Stdout, newError.Error())
 		os.Exit(0)
 	}
 
 	partidos := AbrirArchivo(args[0])
 	listaPartidos := guardarPartidos(partidos)
+	listaBlanco := votos.CrearVotosEnBlanco()
 
 	padron := AbrirArchivo(args[1])
 	listaVotantes := guardarPadron(padron)
-
 	colaVotantes := TDACola.CrearColaEnlazada[votos.Votante]()
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
+
 		input := strings.Split(scanner.Text(), " ")
 		accion := input[0]
 
 		switch accion {
+
 		case "ingresar":
 			dni, err := strconv.Atoi(input[1])
 			if err != nil || dni < 0 {
-				newError := new(errores.DNIError)
+				newError = new(errores.DNIError)
 				fmt.Fprintln(os.Stdout, newError.Error())
 			}
 			for iter := listaVotantes.Iterador(); iter.HaySiguiente(); {
@@ -95,30 +99,30 @@ func main() {
 					iter.Siguiente()
 				} else {
 					colaVotantes.Encolar(iter.VerActual())
+					fmt.Println("OK")
 					break
 				}
 
 				if !iter.HaySiguiente() {
-					newError := new(errores.DNIFueraPadron)
+					newError = new(errores.DNIFueraPadron)
 					fmt.Fprintln(os.Stdout, newError.Error())
 				}
 			}
-			println("OK")
 
 		case "votar":
 			if colaVotantes.EstaVacia() {
-				newError := new(errores.FilaVacia)
+				newError = new(errores.FilaVacia)
 				fmt.Fprintln(os.Stdout, newError.Error())
 				break
 			} else if len(input) < 3 {
-				newError := new(errores.ErrorTipoVoto)
+				newError = new(errores.ErrorTipoVoto)
 				fmt.Fprintln(os.Stdout, newError.Error())
 				break
 			}
 
 			puesto := input[1]
 			if puesto != "Presidente" && puesto != "Gobernador" && puesto != "Intendente" {
-				newError := new(errores.ErrorTipoVoto)
+				newError = new(errores.ErrorTipoVoto)
 				fmt.Fprintln(os.Stdout, newError.Error())
 				break
 			}
@@ -126,36 +130,97 @@ func main() {
 			lista, err := strconv.Atoi(input[2])
 			cantPartidos := Cantidad(listaPartidos)
 			if lista > cantPartidos || err != nil {
-				newError := new(errores.ErrorAlternativaInvalida)
+				newError = new(errores.ErrorAlternativaInvalida)
 				fmt.Fprintln(os.Stdout, newError.Error())
 				break
 			}
 
 			if puesto == "Presidente" {
-				colaVotantes.VerPrimero().Votar(0, lista)
+				newError = colaVotantes.VerPrimero().Votar(votos.PRESIDENTE, lista)
 			}
 			if puesto == "Gobernador" {
-				colaVotantes.VerPrimero().Votar(1, lista)
+				newError = colaVotantes.VerPrimero().Votar(votos.GOBERNADOR, lista)
 			}
 			if puesto == "Intendente" {
-				colaVotantes.VerPrimero().Votar(2, lista)
+				newError = colaVotantes.VerPrimero().Votar(votos.INTENDENTE, lista)
 			}
-			println("OK")
+			if newError != nil {
+				fmt.Fprintln(os.Stdout, newError.Error())
+				colaVotantes.Desencolar()
+				break
+			}
+
+			fmt.Println("OK")
 
 		case "deshacer":
 			if colaVotantes.EstaVacia() {
-				newError := new(errores.FilaVacia)
+				newError = new(errores.FilaVacia)
 				fmt.Fprintln(os.Stdout, newError.Error())
 				break
 			}
-			colaVotantes.VerPrimero().Deshacer()
-			println("OK")
+			newError = colaVotantes.VerPrimero().Deshacer()
+			if newError != nil {
+				fmt.Fprintln(os.Stdout, newError.Error())
+				if newError.Error() != "ERROR: Sin voto a deshacer" {
+					colaVotantes.Desencolar()
+				}
+				break
+			}
+
+			fmt.Println("OK")
+
 		case "fin-votar":
 			if colaVotantes.EstaVacia() {
-				newError := new(errores.FilaVacia)
+				newError = new(errores.FilaVacia)
 				fmt.Fprintln(os.Stdout, newError.Error())
 				break
 			}
+			voto, newError := colaVotantes.VerPrimero().FinVoto()
+			if newError != nil {
+				fmt.Fprintln(os.Stdout, newError.Error())
+			} else {
+				colaVotantes.Desencolar()
+				fmt.Println("OK")
+			}
+
+			if voto.Impugnado {
+				break
+			}
+
+			fmt.Println(voto.VotoPorTipo)
+			for i, voto := range voto.VotoPorTipo {
+				if voto == votos.VOTO_EN_BLANCO {
+					listaBlanco.VotadoPara(i)
+					continue
+				}
+				for iter := listaPartidos.Iterador(); iter.HaySiguiente(); {
+					if voto == iter.VerActual().LeerNroLista() {
+						iter.VerActual().VotadoPara(i)
+					}
+					iter.Siguiente()
+				}
+			}
+
+		default:
+			fmt.Fprintln(os.Stdout, "Input incorrecto")
 		}
+	}
+	fmt.Println("\nPresidente:")
+	fmt.Fprintln(os.Stdout, listaBlanco.ObtenerResultado(votos.PRESIDENTE))
+	for iter := listaPartidos.Iterador(); iter.HaySiguiente(); {
+		fmt.Fprintln(os.Stdout, iter.VerActual().ObtenerResultado(votos.PRESIDENTE))
+		iter.Siguiente()
+	}
+	fmt.Println("\nGobernador:")
+	fmt.Fprintln(os.Stdout, listaBlanco.ObtenerResultado(votos.GOBERNADOR))
+	for iter := listaPartidos.Iterador(); iter.HaySiguiente(); {
+		fmt.Fprintln(os.Stdout, iter.VerActual().ObtenerResultado(votos.GOBERNADOR))
+		iter.Siguiente()
+	}
+	fmt.Println("\nIntendente:")
+	fmt.Fprintln(os.Stdout, listaBlanco.ObtenerResultado(votos.INTENDENTE))
+	for iter := listaPartidos.Iterador(); iter.HaySiguiente(); {
+		fmt.Fprintln(os.Stdout, iter.VerActual().ObtenerResultado(votos.INTENDENTE))
+		iter.Siguiente()
 	}
 }

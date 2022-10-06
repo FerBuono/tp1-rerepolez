@@ -30,37 +30,47 @@ func (votante votanteImplementacion) LeerDNI() int {
 
 func (votante *votanteImplementacion) Votar(tipo int, alternativa int) error {
 	if votante.estado == FINALIZADO {
-		votanteFraudulento := new(errores.ErrorVotanteFraudulento)
-		votanteFraudulento.Dni = votante.dni
-		return votanteFraudulento
+		return votante.votanteFraudulento()
 	}
-	voto := [2]int{tipo, alternativa}
+	voto := [2]int{int(tipo), alternativa}
 	votante.votos.Apilar(voto)
 	return nil
 }
 
 func (votante *votanteImplementacion) Deshacer() error {
-	if votante.votos.EstaVacia() {
-		errorNoHayVotosAnteriores := new(errores.ErrorNoHayVotosAnteriores)
-		return errorNoHayVotosAnteriores
-	}
 	if votante.estado == FINALIZADO {
-		votanteFraudulento := new(errores.ErrorVotanteFraudulento)
-		votanteFraudulento.Dni = votante.dni
-		return votanteFraudulento
+		return votante.votanteFraudulento()
+	}
+	if votante.votos.EstaVacia() {
+		newError := new(errores.ErrorNoHayVotosAnteriores)
+		return newError
 	}
 	votante.votos.Desapilar()
 	return nil
 }
 
 func (votante *votanteImplementacion) FinVoto() (Voto, error) {
-	votos := [3]int{}
+	if votante.estado == FINALIZADO {
+		return Voto{}, votante.votanteFraudulento()
+	}
+	votos := [3]int{VOTO_EN_BLANCO, VOTO_EN_BLANCO, VOTO_EN_BLANCO}
 	for !votante.votos.EstaVacia() {
 		voto := votante.votos.Desapilar()
-		if votos[voto[0]] == 0 {
+		if votos[voto[0]] == VOTO_EN_BLANCO {
 			votos[voto[0]] = voto[1]
 		}
 	}
 	votante.estado = FINALIZADO
+	for _, voto := range votos {
+		if voto == LISTA_IMPUGNA {
+			return Voto{votos, true}, nil
+		}
+	}
 	return Voto{votos, false}, nil
+}
+
+func (votante *votanteImplementacion) votanteFraudulento() error {
+	newError := new(errores.ErrorVotanteFraudulento)
+	newError.Dni = votante.dni
+	return newError
 }

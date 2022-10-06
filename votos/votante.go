@@ -1,14 +1,15 @@
 package votos
 
 const (
-	PRESIDENTE = 0
-	GOBERNADOR = 1
-	INTENDENTE = 2
+	PRESIDENTE int = 0
+	GOBERNADOR int = 1
+	INTENDENTE int = 2
 )
 
 const (
-	CANT_VOTACION = INTENDENTE + 1
-	LISTA_IMPUGNA = 0
+	CANT_VOTACION      = INTENDENTE + 1
+	LISTA_IMPUGNA  int = 0
+	VOTO_EN_BLANCO int = -1
 )
 
 // Voto tiene guardada la información de un voto emitido, por cada tipo de voto posible.
@@ -16,7 +17,7 @@ const (
 // Si vale 0, es un voto en blanco.
 // Si Impugnado es 'true', entonces no hay que considerar ninguna de las alterantivas señaladas.
 type Voto struct {
-	VotoPorTipo [CANT_VOTACION]int
+	VotoPorTipo [int(CANT_VOTACION)]int
 	Impugnado   bool
 }
 
@@ -26,7 +27,7 @@ type Votante interface {
 	//LeerDNI Nos da el DNI del votante
 	LeerDNI() int
 
-	//Votar asenta la alternativa elegida en el tipo de voto indicado. En caso que el votante ya hubiera terminado
+	//Votar asenta la alternativa elegida en el puesto indicado. En caso que el votante ya hubiera terminado
 	//anteriormente de votar, devolverá el error correspondiente. Sino, nil.
 	Votar(tipo int, alternativa int) error
 
