@@ -35,52 +35,53 @@ func guardarPartidos(partidos *os.File) []votos.Partido {
 	return listaPartidos
 }
 
-func guardarPadron(padron *os.File) []int {
-	listaVotantes := []int{}
+func guardarPadron(padron *os.File) []votos.Votante {
+	listaVotantes := []votos.Votante{}
 
 	scannerPadron := bufio.NewScanner(padron)
 	for scannerPadron.Scan() {
 		dniVotante, _ := strconv.Atoi(scannerPadron.Text())
-		listaVotantes = append(listaVotantes, dniVotante)
+		votante := votos.CrearVotante(dniVotante)
+		listaVotantes = append(listaVotantes, votante)
 	}
 	return listaVotantes
 }
 
-func quickSort(arr []int) []int {
-	if len(arr) < 2 {
-		return arr
+func quickSort(lista []votos.Votante) []votos.Votante {
+	if len(lista) < 2 {
+		return lista
 	}
 
-	ini, fin := 0, len(arr)-1
+	ini, fin := 0, len(lista)-1
 
-	pivot := rand.Int() % len(arr)
+	pivot := rand.Int() % len(lista)
 
-	arr[pivot], arr[fin] = arr[fin], arr[pivot]
+	lista[pivot], lista[fin] = lista[fin], lista[pivot]
 
-	for i, _ := range arr {
-		if arr[i] < arr[fin] {
-			arr[ini], arr[i] = arr[i], arr[ini]
+	for i, _ := range lista {
+		if lista[i].LeerDNI() < lista[fin].LeerDNI() {
+			lista[ini], lista[i] = lista[i], lista[ini]
 			ini++
 		}
 	}
 
-	arr[ini], arr[fin] = arr[fin], arr[ini]
+	lista[ini], lista[fin] = lista[fin], lista[ini]
 
-	quickSort(arr[:ini])
-	quickSort(arr[ini+1:])
+	quickSort(lista[:ini])
+	quickSort(lista[ini+1:])
 
-	return arr
+	return lista
 }
 
-func buscar(arr []int, ini, fin, elemento int) int {
+func buscar(arr []votos.Votante, ini, fin, elemento int) int {
 	if ini > fin {
 		return -1
 	}
 	med := (ini + fin) / 2
-	if arr[med] == elemento {
+	if arr[med].LeerDNI() == elemento {
 		return med
 	}
-	if arr[med] < elemento {
+	if arr[med].LeerDNI() < elemento {
 		return buscar(arr, med+1, fin, elemento)
 	} else {
 		return buscar(arr, ini, med-1, elemento)
@@ -125,14 +126,14 @@ func main() {
 				break
 			}
 
-			if buscar(listaVotantes, 0, len(listaVotantes)-1, dni) == -1 {
+			pos := buscar(listaVotantes, 0, len(listaVotantes)-1, dni)
+			if pos == -1 {
 				newError = new(errores.DNIFueraPadron)
 				fmt.Fprintln(os.Stdout, newError.Error())
 				break
 			}
 
-			votante := votos.CrearVotante(dni)
-			colaVotantes.Encolar(votante)
+			colaVotantes.Encolar(listaVotantes[pos])
 			fmt.Println("OK")
 
 		case "votar":
@@ -255,5 +256,9 @@ func main() {
 		fmt.Fprintln(os.Stdout, partido.ObtenerResultado(votos.INTENDENTE))
 	}
 
-	fmt.Fprintf(os.Stdout, "\nVotos Impugnados: %d votos\n", votosImpugnados)
+	if votosImpugnados == 1 {
+		fmt.Fprintf(os.Stdout, "\nVotos Impugnados: %d voto\n", votosImpugnados)
+	} else {
+		fmt.Fprintf(os.Stdout, "\nVotos Impugnados: %d votos\n", votosImpugnados)
+	}
 }

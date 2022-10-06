@@ -32,6 +32,7 @@ func (votante *votanteImplementacion) Votar(tipo int, alternativa int) error {
 	if votante.estado == FINALIZADO {
 		return votante.votanteFraudulento()
 	}
+
 	voto := [2]int{int(tipo), alternativa}
 	votante.votos.Apilar(voto)
 	return nil
@@ -53,20 +54,23 @@ func (votante *votanteImplementacion) FinVoto() (Voto, error) {
 	if votante.estado == FINALIZADO {
 		return Voto{}, votante.votanteFraudulento()
 	}
-	votos := [3]int{VOTO_EN_BLANCO, VOTO_EN_BLANCO, VOTO_EN_BLANCO}
+
+	votoFinal := [3]int{VOTO_EN_BLANCO, VOTO_EN_BLANCO, VOTO_EN_BLANCO}
+
 	for !votante.votos.EstaVacia() {
 		voto := votante.votos.Desapilar()
-		if votos[voto[0]] == VOTO_EN_BLANCO {
-			votos[voto[0]] = voto[1]
+
+		if votoFinal[voto[0]] == VOTO_EN_BLANCO || voto[1] == LISTA_IMPUGNA {
+			votoFinal[voto[0]] = voto[1]
 		}
 	}
 	votante.estado = FINALIZADO
-	for _, voto := range votos {
+	for _, voto := range votoFinal {
 		if voto == LISTA_IMPUGNA {
-			return Voto{votos, true}, nil
+			return Voto{votoFinal, true}, nil
 		}
 	}
-	return Voto{votos, false}, nil
+	return Voto{votoFinal, false}, nil
 }
 
 func (votante *votanteImplementacion) votanteFraudulento() error {
