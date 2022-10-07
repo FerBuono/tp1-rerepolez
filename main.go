@@ -58,7 +58,7 @@ func quickSort(lista []votos.Votante) []votos.Votante {
 
 	lista[pivot], lista[fin] = lista[fin], lista[pivot]
 
-	for i, _ := range lista {
+	for i := range lista {
 		if lista[i].LeerDNI() < lista[fin].LeerDNI() {
 			lista[ini], lista[i] = lista[i], lista[ini]
 			ini++
