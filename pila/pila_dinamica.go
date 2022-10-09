@@ -37,14 +37,8 @@ func (p *pilaDinamica[T]) Desapilar() T {
 		panic("La pila esta vacia")
 	}
 
-	if p.cantidad <= cap(p.datos)/_VALOR_PARA_REDUCIR {
-		var nuevaCapacidad int
-		if cap(p.datos)/_VECES_A_REDUCIR < _CAPACIDAD_INICIAL {
-			nuevaCapacidad = _CAPACIDAD_INICIAL
-		} else {
-			nuevaCapacidad = cap(p.datos) / _VECES_A_REDUCIR
-		}
-		p.redimensionar(nuevaCapacidad)
+	if p.cantidad <= cap(p.datos)/_VALOR_PARA_REDUCIR && cap(p.datos) > _CAPACIDAD_INICIAL {
+		p.redimensionar(cap(p.datos) / _VECES_A_REDUCIR)
 	}
 
 	elemento := p.datos[p.cantidad-1]
