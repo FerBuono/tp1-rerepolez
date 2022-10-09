@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-func abrirArchivo(archivo string) *os.File {
+func AbrirArchivo(archivo string) *os.File {
 	file, err := os.Open(archivo)
 	if err != nil {
 		newError := new(errores.ErrorLeerArchivo)
@@ -89,9 +89,7 @@ func buscar(arr []votos.Votante, ini, fin, elemento int) int {
 
 }
 
-func votacion(listaVotantes []votos.Votante, listaPartidos []votos.Partido,
-	listaBlanco votos.Partido, votosImpugnados int) {
-
+func votacion(listaVotantes []votos.Votante, listaPartidos []votos.Partido, listaBlanco votos.Partido, votosImpugnados *int) {
 	var newError error
 	colaVotantes := TDACola.CrearColaEnlazada[votos.Votante]()
 
@@ -200,7 +198,7 @@ func votacion(listaVotantes []votos.Votante, listaPartidos []votos.Partido,
 			}
 
 			if voto.Impugnado {
-				votosImpugnados++
+				*votosImpugnados++
 				break
 			}
 
@@ -224,7 +222,7 @@ func votacion(listaVotantes []votos.Votante, listaPartidos []votos.Partido,
 	}
 }
 
-func finzalizar(listaBlanco votos.Partido, listaPartidos []votos.Partido, votosImpugnados int) {
+func finalizar(listaBlanco votos.Partido, listaPartidos []votos.Partido, votosImpugnados *int) {
 	fmt.Fprintln(os.Stdout, "Presidente:")
 	fmt.Fprintln(os.Stdout, listaBlanco.ObtenerResultado(votos.PRESIDENTE))
 	for _, partido := range listaPartidos {
@@ -243,9 +241,9 @@ func finzalizar(listaBlanco votos.Partido, listaPartidos []votos.Partido, votosI
 		fmt.Fprintln(os.Stdout, partido.ObtenerResultado(votos.INTENDENTE))
 	}
 
-	if votosImpugnados == 1 {
-		fmt.Fprintf(os.Stdout, "\nVotos Impugnados: %d voto\n", votosImpugnados)
+	if *votosImpugnados == 1 {
+		fmt.Fprintf(os.Stdout, "\nVotos Impugnados: %d voto\n", *votosImpugnados)
 	} else {
-		fmt.Fprintf(os.Stdout, "\nVotos Impugnados: %d votos\n", votosImpugnados)
+		fmt.Fprintf(os.Stdout, "\nVotos Impugnados: %d votos\n", *votosImpugnados)
 	}
 }

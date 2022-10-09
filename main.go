@@ -17,14 +17,15 @@ func main() {
 		os.Exit(0)
 	}
 
-	partidos := abrirArchivo(args[0])
+	partidos := AbrirArchivo(args[0])
 	listaPartidos := guardarPartidos(partidos)
 
-	padron := abrirArchivo(args[1])
+	padron := AbrirArchivo(args[1])
 	listaVotantes := quickSort(guardarPadron(padron))
 
 	listaBlanco := votos.CrearVotosEnBlanco()
-	votosImpugnados := 0
+	var votosImpugnados *int = new(int)
+
 	votacion(listaVotantes, listaPartidos, listaBlanco, votosImpugnados)
-	finzalizar(listaBlanco, listaPartidos, votosImpugnados)
+	finalizar(listaBlanco, listaPartidos, votosImpugnados)
 }
