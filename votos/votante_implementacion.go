@@ -36,7 +36,7 @@ func (votante *votanteImplementacion) Votar(tipo int, alternativa int) error {
 	if !votante.votando {
 		return votante.votanteFraudulento()
 	}
-	voto := voto{int(tipo), alternativa}
+	voto := voto{tipo, alternativa}
 	votante.votos.Apilar(voto)
 	return nil
 }

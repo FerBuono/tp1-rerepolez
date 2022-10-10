@@ -8,21 +8,19 @@ import (
 )
 
 func main() {
-	var newError error
 
 	var args = os.Args[1:]
 	if len(args) < 2 {
-		newError = new(errores.ErrorParametros)
-		fmt.Fprintln(os.Stdout, newError.Error())
+		fmt.Fprintln(os.Stdout, errores.ErrorParametros{}.Error())
 		os.Exit(0)
 	}
 
-	partidos := AbrirArchivo(args[0])
+	partidos := abrirArchivo(args[0])
 	listaPartidos := guardarPartidos(partidos)
 	partidos.Close()
 
-	padron := AbrirArchivo(args[1])
-	listaVotantes := quickSort(guardarPadron(padron))
+	padron := abrirArchivo(args[1])
+	listaVotantes := ordenarListaVotantes(guardarPadron(padron))
 	padron.Close()
 
 	listaBlanco := votos.CrearVotosEnBlanco()
