@@ -19,9 +19,11 @@ func main() {
 
 	partidos := AbrirArchivo(args[0])
 	listaPartidos := guardarPartidos(partidos)
+	partidos.Close()
 
 	padron := AbrirArchivo(args[1])
 	listaVotantes := quickSort(guardarPadron(padron))
+	padron.Close()
 
 	listaBlanco := votos.CrearVotosEnBlanco()
 	var votosImpugnados *int = new(int)

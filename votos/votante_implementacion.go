@@ -6,21 +6,25 @@ import (
 )
 
 const (
-	VOTANDO    = 0
-	FINALIZADO = 1
+	VOTANDO = true
 )
 
+type voto struct {
+	tipo        int
+	alternativa int
+}
+
 type votanteImplementacion struct {
-	dni    int
-	votos  TDAPila.Pila[[2]int]
-	estado int
+	dni     int
+	votos   TDAPila.Pila[voto]
+	votando bool
 }
 
 func CrearVotante(dni int) Votante {
 	v := new(votanteImplementacion)
 	v.dni = dni
-	v.votos = TDAPila.CrearPilaDinamica[[2]int]()
-	v.estado = VOTANDO
+	v.votos = TDAPila.CrearPilaDinamica[voto]()
+	v.votando = VOTANDO
 	return v
 }
 
@@ -29,17 +33,16 @@ func (votante votanteImplementacion) LeerDNI() int {
 }
 
 func (votante *votanteImplementacion) Votar(tipo int, alternativa int) error {
-	if votante.estado == FINALIZADO {
+	if !votante.votando {
 		return votante.votanteFraudulento()
 	}
-
-	voto := [2]int{int(tipo), alternativa}
+	voto := voto{int(tipo), alternativa}
 	votante.votos.Apilar(voto)
 	return nil
 }
 
 func (votante *votanteImplementacion) Deshacer() error {
-	if votante.estado == FINALIZADO {
+	if !votante.votando {
 		return votante.votanteFraudulento()
 	}
 	if votante.votos.EstaVacia() {
@@ -51,7 +54,7 @@ func (votante *votanteImplementacion) Deshacer() error {
 }
 
 func (votante *votanteImplementacion) FinVoto() (Voto, error) {
-	if votante.estado == FINALIZADO {
+	if !votante.votando {
 		return Voto{}, votante.votanteFraudulento()
 	}
 
@@ -60,11 +63,11 @@ func (votante *votanteImplementacion) FinVoto() (Voto, error) {
 	for !votante.votos.EstaVacia() {
 		voto := votante.votos.Desapilar()
 
-		if votoFinal[voto[0]] == VOTO_EN_BLANCO || voto[1] == LISTA_IMPUGNA {
-			votoFinal[voto[0]] = voto[1]
+		if votoFinal[voto.tipo] == VOTO_EN_BLANCO || voto.alternativa == LISTA_IMPUGNA {
+			votoFinal[voto.tipo] = voto.alternativa
 		}
 	}
-	votante.estado = FINALIZADO
+	votante.votando = false
 	for _, voto := range votoFinal {
 		if voto == LISTA_IMPUGNA {
 			return Voto{votoFinal, true}, nil
